@@ -6,11 +6,20 @@ on:
 
 jobs:
   repro:
-    runs-on: macos-15-intel
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15-intel
+          - macos-26-intel
+          - macos-14
+          - macos-15
+          - macos-26
+          - macos-27
 
     steps:
       - name: Create a venv using Apple system Python
-        if: false
         shell: bash
         run: |
           set -euxo pipefail

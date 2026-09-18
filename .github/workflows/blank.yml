@@ -1,0 +1,46 @@
+name: Reproduce aqt LibreSSL version parsing
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  repro:
+    runs-on: macos-15-intel
+
+    steps:
+      - name: Create a venv using Apple system Python
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          # Confirm this is the system interpreter, not the tool-cache Python.
+          /usr/bin/python3 --version
+          /usr/bin/python3 -c 'import ssl; print(ssl.OPENSSL_VERSION)'
+
+          /usr/bin/python3 -m venv "$RUNNER_TEMP/system-python-venv"
+          "$RUNNER_TEMP/system-python-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/system-python-venv/bin/python" -m pip install 'aqtinstall==3.3.*'
+
+      - name: Show the warning plus aqt output
+        shell: bash
+        run: |
+          set -o pipefail
+          PYTHON="$RUNNER_TEMP/system-python-venv/bin/python"
+
+          # Expected shape: urllib3 LibreSSL warning, then a version such as 6.9.2.
+          "$PYTHON" -W default -m aqt list-qt mac desktop \
+            --spec 6.9 --latest-version 2>&1 | tee aqt-output.txt
+
+      - name: Demonstrate why the old regex fails
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          node <<'NODE'
+          const fs = require("fs");
+          const output = fs.readFileSync("aqt-output.txt", "utf8").trim();
+
+          console.log("Old regex:", /^\d+\.\d+\.\d+$/.test(output));
+          console.log("Fixed regex:", /^\d+\.\d+\.\d+$/m.test(output));
+          NODE

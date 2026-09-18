@@ -1,9 +1,7 @@
-name: Reproduce install-qt-action aqt output parsing
-
+name: Reproduce bug when urllib3 v2 outputs warning about LibreSSL 2.8.3
 on:
   push:
   workflow_dispatch:
-
 jobs:
   repro:
     runs-on: ${{ matrix.os }}
@@ -17,42 +15,30 @@ jobs:
           - macos-15
           - macos-26
           - xcode-27
-
     steps:
-      - name: Create a venv using Apple system Python
+      - name: Create venv with Apple system Python
         shell: bash
         run: |
-          set -euxo pipefail
+          path="$PWD/system-python-venv"
+          /usr/bin/python3 -m venv "$path"
+          echo "$path" | tee "$GITHUB_PATH"
 
-          # Confirm this is the system interpreter, not the tool-cache Python.
-          /usr/bin/python3 --version
-          /usr/bin/python3 -c 'import ssl; print(ssl.OPENSSL_VERSION)'
-
-          /usr/bin/python3 -m venv "$RUNNER_TEMP/system-python-venv"
-
-          # GITHUB_PATH affects all later steps, including a `uses:` action step.
-          echo "$RUNNER_TEMP/system-python-venv/bin" >> "$GITHUB_PATH"
-
-      - name: Confirm the selected Python
-        shell: bash
+      - name: Print Python details
+        shell: python
         run: |
-          set -euxo pipefail
-          command -v python
-          command -v python3
-          python3 -c 'import ssl; print(ssl.OPENSSL_VERSION)'
+          import sys
+          import ssl
+          
+          print(sys.executable)
+          print(sys.version)
+          print(ssl.OPENSSL_VERSION)
 
       - name: Run the old action implementation
-        uses: jurplel/install-qt-action@bcb88e3bed2e992f5f9e24c0f9e364a231d278eb
+        uses: jurplel/install-qt-action@bcb88e3bed2e992f5f9e24c0f9e364a231d278eb  # v4.4.0
         with:
-          # Do not allow the outer composite action to replace our interpreter.
+          # Do NOT let "actions/setup-python" download Python with OpenSSL backend.
           setup-python: false
-
-          # for Python 3.9.6 on macOS; https://pypi.org/project/py7zr/1.0.0/
+          # For Python 3.9.6 on macOS; https://pypi.org/project/py7zr/1.0.0/ .
           py7zrversion: ==1.0.0
-
-          # This triggers `aqt list-qt ... --latest-version`, whose output
-          # is parsed by the old non-/m regex.
-          version: "6.9"
-          host: mac
-          target: desktop
-          arch: clang_64
+          # "aqt list-qt ..." will still be called.
+          extra: --dry-run

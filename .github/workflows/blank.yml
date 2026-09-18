@@ -75,5 +75,10 @@ jobs:
           python -m aqt list-qt mac desktop --spec 6.8.3 --latest-version \
             1>./stdout \
             2>./stderr
-          cat ./stdout
-          cat ./stderr
+          cat <<EOF
+          ===
+          $(cat ./stdout)
+          ---
+          $(cat ./stderr)
+          ===
+          EOF

@@ -15,6 +15,9 @@ jobs:
           - macos-15
           - macos-26
           - xcode-27
+        aqt-commit:
+          - 65312ef606a0962fb2372197b37393792e88c2ce  # latest master
+          - 51b817a0652ed232ed870fa326d796471fc6ee4a  # mine
     steps:
       - name: Create venv with Apple system Python
         shell: bash

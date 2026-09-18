@@ -21,7 +21,7 @@ jobs:
         run: |
           path="$PWD/system-python-venv"
           /usr/bin/python3 -m venv "$path"
-          echo "$path" | tee "$GITHUB_PATH"
+          echo "$path" | tee --append "$GITHUB_PATH"
 
       - name: Print Python details
         shell: python

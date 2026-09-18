@@ -16,7 +16,7 @@ jobs:
           - macos-14
           - macos-15
           - macos-26
-          - macos-27
+          - xcode-27
 
     steps:
       - name: Create a venv using Apple system Python

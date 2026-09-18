@@ -67,3 +67,13 @@ jobs:
           py7zrversion: ==1.0.0
           # "aqt list-qt ..." will still be called.
           extra: --dry-run
+
+      - name: Check STDOUT and STDERR
+        if: always()
+        run: |
+          set -x
+          python -m aqt list-qt mac desktop --spec 6.8.3 --latest-version \
+            1>./stdout \
+            2>./stderr
+          cat ./stdout
+          cat ./stderr

@@ -16,16 +16,12 @@ jobs:
           - macos-26
           - xcode-27
     steps:
-      - name: Create a venv using Apple system Python
+      - name: Create venv with Apple system Python
         shell: bash
         run: |
-          set -euxo pipefail
-          # Confirm this is the system interpreter, not the tool-cache Python.
-          /usr/bin/python3 --version
-          /usr/bin/python3 -c 'import ssl; print(ssl.OPENSSL_VERSION)'
-          /usr/bin/python3 -m venv "$RUNNER_TEMP/system-python-venv"
-          # GITHUB_PATH affects all later steps, including a `uses:` action step.
-          echo "$RUNNER_TEMP/system-python-venv/bin" >> "$GITHUB_PATH"
+          path="$RUNNER_TEMP/system-python-venv"
+          /usr/bin/python3 -m venv "$path"
+          echo "$path/bin" | tee -a "$GITHUB_PATH"
 
       - name: Print Python details
         shell: python

@@ -1,4 +1,4 @@
-name: Reproduce aqt LibreSSL version parsing
+name: Reproduce install-qt-action aqt output parsing
 
 on:
   push:
@@ -19,28 +19,27 @@ jobs:
           /usr/bin/python3 -c 'import ssl; print(ssl.OPENSSL_VERSION)'
 
           /usr/bin/python3 -m venv "$RUNNER_TEMP/system-python-venv"
-          "$RUNNER_TEMP/system-python-venv/bin/python" -m pip install --upgrade pip
-          "$RUNNER_TEMP/system-python-venv/bin/python" -m pip install 'aqtinstall==3.3.*'
 
-      - name: Show the warning plus aqt output
-        shell: bash
-        run: |
-          set -o pipefail
-          PYTHON="$RUNNER_TEMP/system-python-venv/bin/python"
+          # GITHUB_PATH affects all later steps, including a `uses:` action step.
+          echo "$RUNNER_TEMP/system-python-venv/bin" >> "$GITHUB_PATH"
 
-          # Expected shape: urllib3 LibreSSL warning, then a version such as 6.9.2.
-          "$PYTHON" -W default -m aqt list-qt mac desktop \
-            --spec 6.9 --latest-version 2>&1 | tee aqt-output.txt
-
-      - name: Demonstrate why the old regex fails
+      - name: Confirm the selected Python
         shell: bash
         run: |
           set -euxo pipefail
+          command -v python
+          command -v python3
+          python3 -c 'import ssl; print(ssl.OPENSSL_VERSION)'
 
-          node <<'NODE'
-          const fs = require("fs");
-          const output = fs.readFileSync("aqt-output.txt", "utf8").trim();
+      - name: Run the old action implementation
+        uses: jurplel/install-qt-action@bcb88e3bed2e992f5f9e24c0f9e364a231d278eb
+        with:
+          # Do not allow the outer composite action to replace our interpreter.
+          setup-python: false
 
-          console.log("Old regex:", /^\d+\.\d+\.\d+$/.test(output));
-          console.log("Fixed regex:", /^\d+\.\d+\.\d+$/m.test(output));
-          NODE
+          # This triggers `aqt list-qt ... --latest-version`, whose output
+          # is parsed by the old non-/m regex.
+          version: "6.9"
+          host: mac
+          target: desktop
+          arch: clang_64

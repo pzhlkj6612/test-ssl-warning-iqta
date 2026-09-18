@@ -19,7 +19,7 @@ jobs:
       - name: Create venv with Apple system Python
         shell: bash
         run: |
-          path="$PWD/system-python-venv"
+          path="$RUNNER_TEMP/system-python-venv"
           /usr/bin/python3 -m venv "$path"
           echo "$path" | tee -a "$GITHUB_PATH"
 

@@ -37,6 +37,9 @@ jobs:
           # Do not allow the outer composite action to replace our interpreter.
           setup-python: false
 
+          # for Python 3.9.6 on macOS; https://pypi.org/project/py7zr/1.0.0/
+          py7zrversion: ==1.0.0
+
           # This triggers `aqt list-qt ... --latest-version`, whose output
           # is parsed by the old non-/m regex.
           version: "6.9"

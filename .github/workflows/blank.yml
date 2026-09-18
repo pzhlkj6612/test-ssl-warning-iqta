@@ -9,7 +9,13 @@ jobs:
     runs-on: macos-15-intel
 
     steps:
+      - name: use setup-python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.9'
+
       - name: Create a venv using Apple system Python
+        if: false
         shell: bash
         run: |
           set -euxo pipefail

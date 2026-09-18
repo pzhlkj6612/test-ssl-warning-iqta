@@ -33,8 +33,33 @@ jobs:
           print(sys.version)
           print(ssl.OPENSSL_VERSION)
 
-      - name: Run the old action implementation
-        uses: jurplel/install-qt-action@bcb88e3bed2e992f5f9e24c0f9e364a231d278eb  # v4.4.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: jurplel/install-qt-action
+          ref: 65312ef606a0962fb2372197b37393792e88c2ce
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0 
+        with: 
+          node-version: 24 
+          cache: npm 
+          cache-dependency-path: action/ 
+  
+      - run: | 
+          cd action 
+          npm ci || npm install 
+          npm run build 
+        shell: bash
+  
+      # See the root "action.yml" file. 
+      - name: Use local built internal action (hack)
+        run: |
+          sed -i.bak 's|uses: $/action|uses: ./action|' action.yml 
+          diff -u action.yml.bak action.yml || true 
+          git status --porcelain 
+        shell: bash
+  
+      - name: Install Qt
+        uses: ./
         with:
           # Do NOT let "actions/setup-python" download Python with OpenSSL backend.
           setup-python: false
